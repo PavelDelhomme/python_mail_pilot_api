@@ -1,50 +1,58 @@
+from rest_framework.decorators import api_view
+from django.http import JsonResponse
+from .client_file import fetch_emails
+from imapclient import IMAPClient
+from django.core.mail import send_mail as django_send_mail
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from .models import Mail, Folder
-from .serializers import MailSerializer, FolderSerializer
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
+
+@api_view(['POST'])
+def login_view_email(request):
+    email = request.data.get('email')
+    password = request.data.get('password')
+
+    if not email or not password:
+        return Response({"error": "Email and password are required"}, status=400)
+
+    try:
+        # Vérification IMAP
+        with IMAPClient('imap.mail.ovh.net', use_uid=True, ssl=True) as server:
+            server.login(email, password)
+            user, created = User.objects.get_or_create(username=email)
+            if created:
+                user.set_password(password)
+                user.save()
+
+            # Authentifier l'utilisateur dans Django
+            user = authenticate(username=email, password=password)
+            if user is not None:
+                login(request, user)
+                return Response({"message": "Login successful"})
+            else:
+                return Response({"error": "Authentication failed"}, status=401)
+    except Exception as e:
+        print(f"Erreur : {e}")
+        return Response({"error": str(e)}, status=400)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_mails(request):
-    mails = Mail.objects.filter(user=request.user)
-    serializer = MailSerializer(mails, many=True)
-    return Response(serializer.data)
+def get_emails(request):
+    emails = fetch_emails()
+    return JsonResponse(emails, safe=False)
 
 @api_view(['POST'])
 def send_mail(request):
-    serializer = MailSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=201)
-    return Response(serializer.errors, status=400)
+    subject = request.data.get('subject')
+    message = request.data.get('message')
+    recipient_list = [request.data.get('recipient')]
+    sender = request.data.get('sender')
 
-@api_view(['GET', 'POST'])
-def manage_folders(request):
-    if request.method == 'GET':
-        folders = Folder.objects.filter(user=request.user, parent=false)
-        serializer = FolderSerializer(folders, many=True)
-        return Response(serializer.data)
-
-    if request.method == 'POST':
-        serializer = FolderSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
-
-@api_view(['GET', 'POST'])
-def manage_subfolders(request, folder_id):
-    parent_folder = Folder.objects.get(id=folder_id)
-
-    if request.method == 'GET':
-        subfolders = Folder.objects.filter(parent=parent_folder)
-        serializer = FolderSerializer(subfolders, many=True)
-        return Response(serializer.data)
-
-    if request.method == 'POST':
-        serializer = FolderSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user, parent_folder=parent_folder)
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
+    if subject and message and recipient_list:
+        django_send_mail(
+            subject=subject,
+            message=message,
+            from_email=sender,
+            recipient_list=recipient_list,
+        )
+        return Response({"status": "Email sent successfully"}, status=200)
+    return Response({"error": "Invalid data"}, status=400)

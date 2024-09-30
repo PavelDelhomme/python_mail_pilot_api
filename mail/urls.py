@@ -1,10 +1,8 @@
 from django.urls import path
-from .views import get_mails, send_mail
-from .views import manage_folders, manage_subfolders
+from .views import get_emails, send_mail, login_view_email #, manage_folders, manage_subfolders, get_mails
 
 urlpatterns = [
-    path('mails/', get_mails),
     path('send/', send_mail),
-    path('folders/', manage_folders),
-    path('folders/<int:folder_id>/subfolders/', manage_subfolders),
+    path('get_emails/', get_emails),
+    path('login_with_email/', login_view_email),
 ]
