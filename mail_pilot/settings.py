@@ -147,3 +147,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+SECURE_SSL_REDIRECT = True  # Redirige tout le trafic HTTP vers HTTPS
+SESSION_COOKIE_SECURE = True  # Assure que les cookies de session sont transmis uniquement via HTTPS
+CSRF_COOKIE_SECURE = True  # Assure que les cookies CSRF sont transmis uniquement via HTTPS
+SECURE_HSTS_SECONDS = 3600  # Active HSTS pour une heure
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Applique HSTS à tous les sous-domaines
+SECURE_HSTS_PRELOAD = True  # Demande aux navigateurs de précharger cette configuration

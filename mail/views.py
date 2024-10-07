@@ -28,6 +28,9 @@ def login_view_email(request):
             user = authenticate(username=email, password=password)
             if user is not None:
                 login(request, user)
+                # Stockage des information d'authentification dans la sessions
+                request.session['user_email'] = email
+                request.session['user_password'] = password
                 return Response({"message": "Login successful"})
             else:
                 return Response({"error": "Authentication failed"}, status=401)
@@ -37,8 +40,17 @@ def login_view_email(request):
 
 @api_view(['GET'])
 def get_emails(request):
-    emails = fetch_emails()
-    return JsonResponse(emails, safe=False)
+    email = request.session.get('user_email')
+    password = request.session.get('user_password')
+
+    if not email or not password:
+        return Response({"error": "User not authenticated"}, status=403)
+
+    try:
+        emails = fetch_emails(email, password)
+        return JsonResponse(emails, safe=False)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
 
 @api_view(['POST'])
 def send_mail(request):

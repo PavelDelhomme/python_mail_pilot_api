@@ -7,10 +7,10 @@ HOST = "imap.mail.ovh.net"
 USERNAME = "paul@delhomme.ovh"
 PASSWORD = "Pavel180400&Ovh@Delhomme"
 
-def fetch_emails():
+def fetch_emails(email, password):
     emails = []
     with IMAPClient(HOST, use_uid=True, ssl=True) as server:
-        server.login(USERNAME, PASSWORD)
+        server.login(email, password)
         server.select_folder('INBOX')
         messages = server.search(['NOT', 'DELETED'])
         response = server.fetch(messages, ['ENVELOPE', 'BODY[]'])
