@@ -1,5 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import User
+from cryptography.fernet import Fernet
+from django.conf import settings
+
+
+class UserIMAPSettings(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    imap_email = models.EmailField()
+    encrypted_password = models.BinaryField()  # Champ pour stocker le mot de passe chiffré
+    imap_host = models.CharField(max_length=255)
+
+    def set_password(self, raw_password):
+        fernet = Fernet(settings.ENCRYPTION_KEY)
+        self.encrypted_password = fernet.encrypt(raw_password.encode())
+
+    def get_password(self):
+        fernet = Fernet(settings.ENCRYPTION_KEY)
+        return fernet.decrypt(self.encrypted_password).decode()
+
 
 class Mail(models.Model):
     subject = models.CharField(max_length=255)
