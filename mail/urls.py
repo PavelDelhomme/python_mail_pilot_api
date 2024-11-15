@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import get_emails, login_view_email #, manage_folders, manage_subfolders, get_mails
+from .views import configure_imap, get_imap_settings
 
 urlpatterns = [
-    path('get_emails/', get_emails),
-    path('login_with_email/', login_view_email),
+    path('configure_imap/', configure_imap, name='configure_imap'),
+    path('get_imap_settings/', get_imap_settings, name='get_imap_settings'),
 ]
