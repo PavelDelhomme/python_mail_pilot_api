@@ -27,7 +27,10 @@ SECRET_KEY = 'django-insecure-0@xpt^$cv^u@v#vpn^!f!gqr@1ojh%puz-1%s43vgf-*&ejh5y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.133', '192.168.1.157', '0.0.0.0']
+ALLOWED_HOSTS = [
+    'localhost', '127.0.0.1', '192.168.1.133', '192.168.1.157', '0.0.0.0',
+    '192.168.1.189'
+]
 
 
 # Application definition
@@ -160,3 +163,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #SECURE_HSTS_PRELOAD = True  # Demande aux navigateurs de précharger cette configuration
 
 ENCRYPTION_KEY = Fernet.generate_key()
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'ssl0.ovh.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "paul@delhomme.ovh"
+EMAIL_HOST_PASSWORD = "Pavel180400&Ovh@QEIHUSR6U9IP"
+DEFAULT_FROM_EMAIL = "paul@delhomme.ovh"
